@@ -16,6 +16,15 @@ public class AppConfig
     public static  String PDFFormatConfirmationText = "The parties to this lease are:";
 	public static  String PDFFormat2ConfirmationText = "THIS RESIDENTIAL LEASE AGREEMENT";
 	
+	//Mail credentials
+	   public static String fromEmail = "bireports@beetlerim.com";
+	   public static String fromEmailPassword = "Welcome@123";
+	   
+	   public static String toEmail ="gopi.v@beetlerim.com,Santosh.t@beetlerim.com";
+	   public static String CCEmail = "santosh.t@beetlerim.com";
+	   
+	   public static String mailSubject = "Target Rent Update for  ";
+	
    public static String getAutoChargeCode(String company)
    {
 	   switch(company)
