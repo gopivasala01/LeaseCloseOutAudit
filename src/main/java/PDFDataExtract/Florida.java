@@ -14,12 +14,12 @@ public class Florida
 {
 	//public static void main(String[] args)
 	
-	public static void florida() throws Exception
+    public static void florida() throws Exception
 	{
 		try
 		{
 		File file = RunnerClass.getLastModified();
-		//File file = new File("C:\\SantoshMurthyP\\Lease Audit Automation\\Lease_1222_1123_2709_Butternut_Ct_FL_Knight.pdf");
+		//File file = new File("C:\\SantoshMurthyP\\Lease Audit Automation\\Full_Lease_-_[6320_NW_114_Avenue_#1224B]_-_[Raynald_-_Boyer_1]_-_[01.01.2023]_-_[12.31.2023].PDF (2).pdf");
 		System.out.println(file);
 		FileInputStream fis = new FileInputStream(file);
 		PDDocument document = PDDocument.load(fis);
@@ -43,14 +43,20 @@ public class Florida
 	    }
 	    else 
 	    {
-	    	
+	    	System.out.println("Wrong PDF Format");
+	    	RunnerClass.monthlyRent = "Error";
+	    	RunnerClass.startDate = "Error";
 	    }
 	    //System.out.println(text);
 	    try
 	    {
-	    String monthlyRent = text.substring(text.indexOf(monthlyRent_Prior)+monthlyRent_Prior.length()).split(" ")[0].trim();
+	    String monthlyRent = text.substring(text.indexOf(monthlyRent_Prior)+monthlyRent_Prior.length()).trim().split(" ")[0].trim();
 	    System.out.println("Monthly Rent Amount = "+monthlyRent);
 	    RunnerClass.monthlyRent = monthlyRent;
+	    if(RunnerClass.monthlyRent.matches(".*[a-zA-Z]+.*"))
+	    {
+	    	RunnerClass.monthlyRent = "Error";
+	    }
 	    }
 	    catch(Exception e)
 	    {
@@ -63,6 +69,15 @@ public class Florida
 	    System.out.println(startDate);
 	    RunnerClass.startDate = startDate;
 	    RunnerClass.startDate = RunnerClass.convertDate(RunnerClass.startDate);
+	   // String day = RunnerClass.startDate.split("/")[1];
+	    if(!RunnerClass.startDate.split("/")[1].equalsIgnoreCase("01")) 
+	    {
+	    	 RunnerClass.startDate = RunnerClass.firstDayOfMonth( RunnerClass.startDate);
+	    	 if(RunnerClass.startDate.matches(".*[a-zA-Z]+.*"))
+	 	     {
+	 	    	RunnerClass.startDate = "Error";
+	 	     }
+	    }
 	    }
 	    catch(Exception e) 
 	    {

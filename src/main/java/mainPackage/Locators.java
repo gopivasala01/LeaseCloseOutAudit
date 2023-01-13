@@ -32,4 +32,5 @@ public class Locators
     public static By newAutoCharge = By.xpath("//*[@value='New Auto Charge']");
     
     public static By autoChargeCodesList = By.xpath("//*[@id='autoChargesTable']/tbody/tr/td[1]");
+    public static By checkPortfolioType = By.xpath("//*[@title='Click to jump to portfolio']");
 }

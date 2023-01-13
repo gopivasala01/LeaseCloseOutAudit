@@ -1,9 +1,13 @@
 package mainPackage;
 
 import java.io.File;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -42,15 +46,15 @@ public class RunnerClass
 	public static String startDate;
 	public static String monthlyRentInPW;
 	public static String startDateInPW;
+	public static String portfolioType;
 	public static void main(String[] args) throws Exception 
 	{
-		
 		
 		//Get Leases for Last Month
 		//Company,BuildingAbbreviation, LeaseNae
 		DataBase.getBuildingsList();
 		PropertyWare.login();
-		for(int i=0;i<lastMonthLeases.length;i++)
+		for(int i=0;i<20;i++)
 		{
 		  company = lastMonthLeases[i][0];
 		  buildingAbbreviation = lastMonthLeases[i][1];
@@ -70,6 +74,7 @@ public class RunnerClass
 						if(PropertyWare.compareValues(monthlyRent, startDate)==true)
 						{
 						//successBuildings.add("'"+buildingAbbreviation+"'");
+							System.out.println("Values matched");
 						String updateSuccessStatus = "update [Automation].[leaseAuditAutomation] Set Status ='Completed', completedDate = getdate() where [BuildingAbbreviation] = '"+buildingAbbreviation+"'";
 				    	DataBase.updateTable(updateSuccessStatus);
 						}
@@ -172,6 +177,21 @@ public class RunnerClass
 		}
 	}
 	
+	    public static String firstDayOfMonth(String date) throws Exception 
+	    {
+	    	//String string = "02/05/2014"; //assuming input
+	        DateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+	        Date dt = sdf .parse(date);
+	        Calendar c = Calendar.getInstance();
+	        c.setTime(dt);
+	        if(RunnerClass.portfolioType=="MCH")
+	        c.add(Calendar.MONTH, 1);  //adding a month directly - gives the start of next month.
+	        else c.add(Calendar.MONTH, 2);
+	        c.set(Calendar.DAY_OF_MONTH, 01);
+	        String firstDate = sdf.format(c.getTime());
+	        System.out.println(firstDate);
+	        return firstDate;
+	    }
 }
 
 /*

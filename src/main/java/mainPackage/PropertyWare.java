@@ -17,6 +17,8 @@ import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.FluentWait;
 import org.openqa.selenium.support.ui.WebDriverWait;
+
+
 import org.openqa.selenium.JavascriptExecutor;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
@@ -112,14 +114,18 @@ public class PropertyWare
 					{
 					     return true;
 					}
-					else 
-					{
-						RunnerClass.failedReaonsList.put(building, "Building Not Found");
-					    RunnerClass.failedReason = "Building Not Found";
-						RunnerClass.updateStatus=1;
-						return false;
-					}
+					
 				}
+				if(leaseSelected==false)
+				{
+					RunnerClass.failedReaonsList.put(building, "Building Not Found");
+				    RunnerClass.failedReason = "Building Not Found";
+					RunnerClass.updateStatus=1;
+					return false;
+				}
+				
+				
+				
 	} catch(Exception e) 
 		{
 		RunnerClass.failedReaonsList.put(building, "Issue in selecting Building");
@@ -132,6 +138,30 @@ public class PropertyWare
 	
 	public static boolean downloadLeaseAgreement(String building, String ownerName) throws Exception
 	{
+		try
+		{
+			RunnerClass.portfolioType = RunnerClass.driver.findElement(Locators.checkPortfolioType).getText();
+			System.out.println("Portfolio Type = "+RunnerClass.portfolioType);
+		
+		int portfolioFlag =0;
+		for(int i=0;i<AppConfig.IAGClientList.length;i++)
+		{
+			if(RunnerClass.portfolioType.contains(mainPackage.AppConfig.IAGClientList[i]))
+			{
+				portfolioFlag =1;
+				break;
+				//AL_PropertyWare.portfolioType = "MCH";
+			}
+		}
+		
+		if(portfolioFlag==1)
+			RunnerClass.portfolioType = "MCH";
+		else RunnerClass.portfolioType = "Others";
+		}
+		catch(Exception e) 
+		{}
+		
+		
 		try
 		{
 		
@@ -172,7 +202,7 @@ public class PropertyWare
 		{
 		for(int i =0;i<documents.size();i++)
 		{
-			if(documents.get(i).getText().startsWith("Lease_"))//&&documents.get(i).getText().contains(leaseFirstName))
+			if(documents.get(i).getText().startsWith("Lease_")&&!documents.get(i).getText().contains("Lease_MOD"))//&&documents.get(i).getText().contains(leaseFirstName))
 			{
 				documents.get(i).click();
 				checkLeaseAgreementAvailable = true;
@@ -184,13 +214,38 @@ public class PropertyWare
 		{
 		for(int i =0;i<documents.size();i++)
 		{
-			if(documents.get(i).getText().contains("Lease_"))//&&documents.get(i).getText().contains(leaseFirstName))
+			if(documents.get(i).getText().contains("Lease_")&&!documents.get(i).getText().contains("Lease_MOD"))//&&documents.get(i).getText().contains(leaseFirstName))
 			{
 				documents.get(i).click();
 				checkLeaseAgreementAvailable = true;
 				break;
 			}
 		}
+		}
+		if(checkLeaseAgreementAvailable==false)
+		{
+		for(int i =0;i<documents.size();i++)
+		{
+			if(documents.get(i).getText().contains("Lease Agreement"))//&&documents.get(i).getText().contains(leaseFirstName))
+			{
+				documents.get(i).click();
+				checkLeaseAgreementAvailable = true;
+				break;
+			}
+		}
+		}
+		if(checkLeaseAgreementAvailable==false)
+		{
+		for(int i =0;i<documents.size();i++)
+		{
+			if(documents.get(i).getText().startsWith("Full Lease"))//&&documents.get(i).getText().contains(leaseFirstName))
+			{
+				documents.get(i).click();
+				checkLeaseAgreementAvailable = true;
+				break;
+			}
+		}
+		
 		}
 		if(checkLeaseAgreementAvailable==false)
 		{
@@ -239,10 +294,12 @@ public class PropertyWare
 				if(endDate.trim()=="")
 				{
 					String rent = RunnerClass.driver.findElement(By.xpath("//*[@id='autoChargesTable']/tbody/tr["+(i+1)+"]/td[3]")).getText();
-					RunnerClass.monthlyRentInPW = rent;
+					RunnerClass.monthlyRentInPW = rent.substring(1);
 					String date = RunnerClass.driver.findElement(By.xpath("//*[@id='autoChargesTable']/tbody/tr["+(i+1)+"]/td[5]")).getText();
 					RunnerClass.startDateInPW = date;
-					if(rent.substring(1).equalsIgnoreCase(monthlyRent)&&date.trim().equalsIgnoreCase(startDate))
+					rent = rent.replaceAll("[^0-9]", "");
+					monthlyRent = monthlyRent.replaceAll("[^0-9]", "");
+					if(rent.equalsIgnoreCase(monthlyRent)&&date.trim().equalsIgnoreCase(startDate))
 					{
 						availibilityCheck = 1;
 						return true;
