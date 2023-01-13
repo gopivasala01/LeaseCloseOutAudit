@@ -23,7 +23,11 @@ public class AppConfig
 	   public static String toEmail ="gopi.v@beetlerim.com,Santosh.t@beetlerim.com";
 	   public static String CCEmail = "santosh.t@beetlerim.com";
 	   
-	   public static String mailSubject = "Target Rent Update for  ";
+	   public static String mailSubject = "Lease Audit for the Month of   ";
+	   
+	   public static String excelFileLocation = "E:\\Automation\\Gopi\\Lease Audit Automation";
+	   
+	   public static String getBuildingsWithStatusforCurrentDay = "Select Company,[BuildingAbbreviation],MonthlyRentFromLeaseAgreement,MonthlyRentInPW,StartDateFromLeaseAgreement,StartDateInPW,Status,notes from automation.[leaseAuditAutomation] where  FoRMAT(completedDate,'MM-dd-yyyy')=FoRMAT(getdate(),'MM-dd-yyyy')";
 	
    public static String getAutoChargeCode(String company)
    {

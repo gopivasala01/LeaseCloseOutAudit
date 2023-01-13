@@ -40,20 +40,25 @@ public class RunnerClass
 	public static String downloadFilePath;
 	public static String monthlyRent;
 	public static String startDate;
+	public static String monthlyRentInPW;
+	public static String startDateInPW;
 	public static void main(String[] args) throws Exception 
 	{
+		
 		
 		//Get Leases for Last Month
 		//Company,BuildingAbbreviation, LeaseNae
 		DataBase.getBuildingsList();
 		PropertyWare.login();
-		for(int i=0;i<2;i++)
+		for(int i=0;i<lastMonthLeases.length;i++)
 		{
 		  company = lastMonthLeases[i][0];
 		  buildingAbbreviation = lastMonthLeases[i][1];
 		  ownerName = lastMonthLeases[i][2];
 		  String insertRecordInTable = "Insert into automation.leaseAuditAutomation (Company,BuildingAbbreviation,LeaseName) values ('"+RunnerClass.company+"','"+RunnerClass.buildingAbbreviation+"','"+RunnerClass.ownerName+"')";
 		  DataBase.updateTable(insertRecordInTable);
+		  try
+		  {
 		  //Search building in property Ware
 		   if(PropertyWare.searchBuilding(company, buildingAbbreviation)==true)
 			{
@@ -63,82 +68,68 @@ public class RunnerClass
 					if(PdfReader.readPDFPerMarket(company)==true)
 					{
 						if(PropertyWare.compareValues(monthlyRent, startDate)==true)
-							successBuildings.add("'"+buildingAbbreviation+"'");
+						{
+						//successBuildings.add("'"+buildingAbbreviation+"'");
+						String updateSuccessStatus = "update [Automation].[leaseAuditAutomation] Set Status ='Completed', completedDate = getdate() where [BuildingAbbreviation] = '"+buildingAbbreviation+"'";
+				    	DataBase.updateTable(updateSuccessStatus);
+						}
 						else 			
 						{
 							System.out.println("Values did not match");
-							RunnerClass.failedReaonsList.put(buildingAbbreviation, "Values did not match");
+							/*RunnerClass.failedReaonsList.put(buildingAbbreviation, "Values did not match");
 						    RunnerClass.failedReason = "Values did not match";
+						    failedBuildings.add("'"+buildingAbbreviation+"'");
 							RunnerClass.updateStatus=1;
+							*/
+							String updateSuccessStatus = "update [Automation].[leaseAuditAutomation] Set Status ='Failed', completedDate = getdate() ,Notes = 'Values did not match' where [BuildingAbbreviation] = '"+buildingAbbreviation+"'";
+					    	DataBase.updateTable(updateSuccessStatus);
 						}
+						String updateValuesInTable = "Update [Automation].[leaseAuditAutomation] Set MonthlyRentFromLeaseAgreement = '"+monthlyRent+"', StartDateFromLeaseAgreement='"+startDate+"',MonthlyRentInPW='"+monthlyRentInPW+"',StartDateInPW ='"+startDateInPW+"' where BuildingAbbreviation = '"+buildingAbbreviation+"' and Company = '"+company+"'";
+						DataBase.updateTable(updateValuesInTable);
 					}
 					else 
 					{
-						failedBuildings.add("'"+buildingAbbreviation+"'");
-						continue;
+						String updateSuccessStatus = "update [Automation].[leaseAuditAutomation] Set Status ='Failed', completedDate = getdate() ,Notes = 'Unable to Read Lease Agreement' where [BuildingAbbreviation] = '"+buildingAbbreviation+"'";
+				    	DataBase.updateTable(updateSuccessStatus);
+						//failedBuildings.add("'"+buildingAbbreviation+"'");
+						//continue;
 					}
 				}
 				else 
 				{
-				failedBuildings.add("'"+buildingAbbreviation+"'");
-				continue;
+					String updateSuccessStatus = "update [Automation].[leaseAuditAutomation] Set Status ='Failed', completedDate = getdate() ,Notes = 'Unable to download Lease Agreement' where [BuildingAbbreviation] = '"+buildingAbbreviation+"'";
+			    	DataBase.updateTable(updateSuccessStatus);
+				//failedBuildings.add("'"+buildingAbbreviation+"'");
+				//continue;
 				}
 				
 			}
 		    else 
 		    {
-		    	failedBuildings.add("'"+buildingAbbreviation+"'");
+		    	String updateSuccessStatus = "update [Automation].[leaseAuditAutomation] Set Status ='Failed', completedDate = getdate() ,Notes = 'Could not find Building' where [BuildingAbbreviation] = '"+buildingAbbreviation+"'";
+		    	DataBase.updateTable(updateSuccessStatus);
+		    	//failedBuildings.add("'"+buildingAbbreviation+"'");
 		    }
+		  
 		   driver.navigate().refresh();
 		   RunnerClass.js.executeScript("window.scrollBy(document.body.scrollHeight,0)");
-		   
+		  }
+		  catch(Exception e)
+		  {
+			  e.printStackTrace();
+			  driver.navigate().refresh();
+			  RunnerClass.js.executeScript("window.scrollBy(document.body.scrollHeight,0)");
+		  }
 		}
 		
-		String success = String.join(",",successBuildings);
-		String failed = String.join(",",failedBuildings);
-		try
-		{
-			if(successBuildings.size()>0)
-			{
-			String updateSuccessStatus = "update automation.TargetRent Set Status ='Completed',StatusID=4, completedOn = getdate() where [Building/Unit Abbreviation] in ("+success+")";
-	    	DataBase.updateTable(updateSuccessStatus);
-			}
-			if(failedBuildings.size()>0)
-			{
-			String failedReasons = String.join(",",failedReaonsList.values());
-			String failedBuildings = String.join(",",failedReaonsList.keySet());
-			String failedBuildingsUpdateQuery = "";
-			for(int i=0;i<failedReaonsList.size();i++)
-			{
-				String buildingAbbr = failedBuildings.split(",")[i].trim();
-				String failedReason = failedReasons.split(",")[i].trim();
-				failedBuildingsUpdateQuery =failedBuildingsUpdateQuery+"\nupdate automation.TargetRent Set Status ='Failed',StatusID=3, completedOn = getdate(),Notes='"+failedReason+"' where [Building/Unit Abbreviation] ='"+buildingAbbr+"'";
-				
-			}
-	    	//String updateFailedStatus = "update automation.TargetRent Set Status ='Failed', completedOn = getdate(),Notes='"+failedReason+"' where [Building/Unit Abbreviation] in ("+failed+")";
-			DataBase.updateTable(failedBuildingsUpdateQuery);
-			}
-		}
-		catch(Exception e) {}
+		
 		
 		//Send Email with status attachment
-		//if(pendingBuildingList.length>0)
-		//CommonMethods.createExcelFileWithProcessedData();
+		if(lastMonthLeases.length>0)
+			
+			
+		ExcelActivities.createExcelFileWithProcessedData();
 		
-		
-		// Start automation
-		/* Login
-		 * Search Building
-		 * Click Building
-		 * Scroll bottom
-		 * Select LeaseName
-		 * Notes & Docs - Download PDF
-		 * Read PDF
-		 * Click Edit button
-		 * Fetch Auto Charges List
-		 * Check if 4000 - Rent and should not have an End Date
-		 * Verify if StartDate and MonthlyRent Matches
-		 */
 
 	}
 
@@ -173,7 +164,7 @@ public class RunnerClass
 	    SimpleDateFormat format2 = new SimpleDateFormat("MM/dd/yyyy");
 	    Date date = format1.parse(dateRaw.trim().replaceAll(" +", " "));
 	    System.out.println(format2.format(date));
-		return date.toString();
+		return format2.format(date).toString();
 		}
 		catch(Exception e)
 		{
@@ -182,3 +173,33 @@ public class RunnerClass
 	}
 	
 }
+
+/*
+String success = String.join(",",successBuildings);
+String failed = String.join(",",failedBuildings);
+try
+{
+	if(successBuildings.size()>0)
+	{
+	String updateSuccessStatus = "update [Automation].[leaseAuditAutomation] Set Status ='Completed', completedDate = getdate() where [BuildingAbbreviation] in ("+success+")";
+	DataBase.updateTable(updateSuccessStatus);
+	}
+	if(failedBuildings.size()>0)
+	{
+	String failedReasons = String.join(",",failedReaonsList.values());
+	String failedBuildings = String.join(",",failedReaonsList.keySet());
+	String failedBuildingsUpdateQuery = "";
+	for(int i=0;i<failedReaonsList.size();i++)
+	{
+		String buildingAbbr = failedBuildings.split(",")[i].trim();
+		String failedReason = failedReasons.split(",")[i].trim();
+		failedBuildingsUpdateQuery =failedBuildingsUpdateQuery+"\nupdate [Automation].[leaseAuditAutomation] Set Status ='Failed', completedDate = getdate(),Notes='"+failedReason+"' where [BuildingAbbreviation] ='"+buildingAbbr+"'";
+		
+	}
+	//String updateFailedStatus = "update automation.TargetRent Set Status ='Failed', completedOn = getdate(),Notes='"+failedReason+"' where [Building/Unit Abbreviation] in ("+failed+")";
+	DataBase.updateTable(failedBuildingsUpdateQuery);
+	}
+}
+
+catch(Exception e) {}
+*/

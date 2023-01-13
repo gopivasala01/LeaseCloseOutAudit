@@ -1,6 +1,10 @@
 package mainPackage;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
 import java.util.Properties;
 
 import javax.activation.DataHandler;
@@ -21,10 +25,17 @@ import javax.mail.internet.MimeMultipart;
 public class MailActivities 
 {
 
-	public static void main(String[] args)
+	public static void sendMail(String FileName)
 	{
 		
-		File fileName = new File("C:\\SantoshMurthyP\\Lease Audit Automation\\Test.txt");
+		Calendar cal =  Calendar.getInstance();
+		cal.add(Calendar.MONTH, -1);
+		//format it to MMM-yyyy // January-2012
+		String previousMonthYear  = new SimpleDateFormat("MMM yyyy").format(cal.getTime());
+        System.out.println(previousMonthYear);
+		
+		File fileName = new File(FileName);
+		
 		// Assuming you are sending email through relay.jangosmtp.net
 	      String host = "smtpout.asia.secureserver.net";
 
@@ -49,10 +60,10 @@ public class MailActivities
 	         // Set From: header field of the header.
 	         message.setFrom(new InternetAddress(AppConfig.fromEmail));
 
-	         //InternetAddress[] iAdressArray = InternetAddress.parse(AppConfig.toEmail);
+	         InternetAddress[] iAdressArray = InternetAddress.parse(AppConfig.toEmail);
 	         // Set To: header field of the header.
 	        message.setRecipients(Message.RecipientType.TO,
-	        		AppConfig.toEmail);
+	        		iAdressArray);
 
 	         // Set CC: header field of the header.
 	         message.setRecipients(Message.RecipientType.CC,
@@ -63,7 +74,7 @@ public class MailActivities
 	        		 InternetAddress.parse("sujana.t@beetlerim.com"));
 	         
 	         // Set Subject: header field
-	        String subject = AppConfig.mailSubject+RunnerClass.currentDate;
+	        String subject = AppConfig.mailSubject+previousMonthYear;
 	        message.setSubject(subject);
 
 	         // Create the message part

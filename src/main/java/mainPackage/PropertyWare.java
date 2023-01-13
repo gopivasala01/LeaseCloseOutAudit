@@ -44,8 +44,8 @@ public class PropertyWare
         RunnerClass.driver.findElement(Locators.signInButton).click();
         RunnerClass.actions = new Actions(RunnerClass.driver);
         RunnerClass.js = (JavascriptExecutor)RunnerClass.driver;
-        RunnerClass.driver.manage().timeouts().implicitlyWait(30,TimeUnit.SECONDS);
-        RunnerClass.wait = new WebDriverWait(RunnerClass.driver, Duration.ofSeconds(50));
+        RunnerClass.driver.manage().timeouts().implicitlyWait(15,TimeUnit.SECONDS);
+        RunnerClass.wait = new WebDriverWait(RunnerClass.driver, Duration.ofSeconds(15));
 	}
 	
 	public static boolean searchBuilding(String company, String building)
@@ -60,8 +60,10 @@ public class PropertyWare
 			}
 			catch(Exception e)
 			{}
-			Thread.sleep(5000);
+			Thread.sleep(3000);
 			System.out.println(building);
+			 RunnerClass.driver.manage().timeouts().implicitlyWait(15,TimeUnit.SECONDS);
+		     RunnerClass.wait = new WebDriverWait(RunnerClass.driver, Duration.ofSeconds(15));
 			try
 			{
 			if(RunnerClass.driver.findElement(Locators.noItemsFound).isDisplayed())
@@ -77,6 +79,8 @@ public class PropertyWare
 			{
 				
 			}
+			 RunnerClass.driver.manage().timeouts().implicitlyWait(15,TimeUnit.SECONDS);
+		     RunnerClass.wait = new WebDriverWait(RunnerClass.driver, Duration.ofSeconds(15));
 		// Select Lease from multiple leases
 				List<WebElement> displayedCompanies = RunnerClass.driver.findElements(Locators.searchedLeaseCompanyHeadings);
 				boolean leaseSelected = false;
@@ -216,6 +220,8 @@ public class PropertyWare
 	
 	public static boolean compareValues(String monthlyRent, String startDate) throws Exception
 	{
+		RunnerClass.monthlyRentInPW ="";
+		RunnerClass.startDateInPW ="";
 		int availibilityCheck =0;
 		RunnerClass.driver.navigate().refresh();
 		RunnerClass.js.executeScript("window.scrollBy(document.body.scrollHeight,0)");
@@ -233,7 +239,9 @@ public class PropertyWare
 				if(endDate.trim()=="")
 				{
 					String rent = RunnerClass.driver.findElement(By.xpath("//*[@id='autoChargesTable']/tbody/tr["+(i+1)+"]/td[3]")).getText();
+					RunnerClass.monthlyRentInPW = rent;
 					String date = RunnerClass.driver.findElement(By.xpath("//*[@id='autoChargesTable']/tbody/tr["+(i+1)+"]/td[5]")).getText();
+					RunnerClass.startDateInPW = date;
 					if(rent.substring(1).equalsIgnoreCase(monthlyRent)&&date.trim().equalsIgnoreCase(startDate))
 					{
 						availibilityCheck = 1;
