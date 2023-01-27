@@ -4,12 +4,14 @@ import java.io.File;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
@@ -19,7 +21,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 public class RunnerClass 
 {
-	public static String[][] lastMonthLeases;
+	public static String[][] lastMonthLeases; 
     public static String company;
     public static String buildingAbbreviation;
     public static String ownerName;
@@ -47,6 +49,8 @@ public class RunnerClass
 	public static String monthlyRentInPW;
 	public static String startDateInPW;
 	public static String portfolioType;
+	public static boolean published;
+	public static boolean listingAgent;
 	public static void main(String[] args) throws Exception 
 	{
 		
@@ -54,7 +58,7 @@ public class RunnerClass
 		//Company,BuildingAbbreviation, LeaseNae
 		DataBase.getBuildingsList();
 		PropertyWare.login();
-		for(int i=0;i<20;i++)
+		for(int i=0;i<lastMonthLeases.length;i++)
 		{
 		  company = lastMonthLeases[i][0];
 		  buildingAbbreviation = lastMonthLeases[i][1];
@@ -102,8 +106,23 @@ public class RunnerClass
 				}
 				else 
 				{
+					/*
+					if(published==false)
+					{
+						String updateSuccessStatus = "update [Automation].[leaseAuditAutomation] Set Status ='Failed', completedDate = getdate() ,Notes = 'Not a Published Unit' where [BuildingAbbreviation] = '"+buildingAbbreviation+"'";
+				    	DataBase.updateTable(updateSuccessStatus);
+					}
+					else if(listingAgent==false)
+					{
+						String updateSuccessStatus = "update [Automation].[leaseAuditAutomation] Set Status ='Failed', completedDate = getdate() ,Notes = 'Unit marketed by Sovereign' where [BuildingAbbreviation] = '"+buildingAbbreviation+"'";
+				    	DataBase.updateTable(updateSuccessStatus);
+					}
+					*/
+					//else 
+					//{
 					String updateSuccessStatus = "update [Automation].[leaseAuditAutomation] Set Status ='Failed', completedDate = getdate() ,Notes = 'Unable to download Lease Agreement' where [BuildingAbbreviation] = '"+buildingAbbreviation+"'";
 			    	DataBase.updateTable(updateSuccessStatus);
+					//}
 				//failedBuildings.add("'"+buildingAbbreviation+"'");
 				//continue;
 				}
@@ -111,13 +130,38 @@ public class RunnerClass
 			}
 		    else 
 		    {
-		    	String updateSuccessStatus = "update [Automation].[leaseAuditAutomation] Set Status ='Failed', completedDate = getdate() ,Notes = 'Could not find Building' where [BuildingAbbreviation] = '"+buildingAbbreviation+"'";
+ 		    	String updateSuccessStatus = "update [Automation].[leaseAuditAutomation] Set Status ='Failed', completedDate = getdate() ,Notes = 'Could not find Building' where [BuildingAbbreviation] = '"+buildingAbbreviation+"'";
 		    	DataBase.updateTable(updateSuccessStatus);
 		    	//failedBuildings.add("'"+buildingAbbreviation+"'");
 		    }
-		  
+		   RunnerClass.driver.manage().timeouts().implicitlyWait(5,TimeUnit.SECONDS);
+	        RunnerClass.wait = new WebDriverWait(RunnerClass.driver, Duration.ofSeconds(5));
+		   try
+			{
+				if(RunnerClass.driver.findElement(Locators.renewalPopup).isDisplayed())
+				{
+					RunnerClass.driver.findElement(Locators.renewalPoupCloseButton).click();
+				}
+
+			}
+			catch(Exception e) {}
+		   RunnerClass.driver.manage().timeouts().implicitlyWait(15,TimeUnit.SECONDS);
+	        RunnerClass.wait = new WebDriverWait(RunnerClass.driver, Duration.ofSeconds(15));
 		   driver.navigate().refresh();
 		   RunnerClass.js.executeScript("window.scrollBy(document.body.scrollHeight,0)");
+		   RunnerClass.driver.manage().timeouts().implicitlyWait(5,TimeUnit.SECONDS);
+	        RunnerClass.wait = new WebDriverWait(RunnerClass.driver, Duration.ofSeconds(5));
+		   try
+			{
+				if(RunnerClass.driver.findElement(Locators.renewalPopup).isDisplayed())
+				{
+					RunnerClass.driver.findElement(Locators.renewalPoupCloseButton).click();
+				}
+
+			}
+			catch(Exception e) {}
+		   RunnerClass.driver.manage().timeouts().implicitlyWait(15,TimeUnit.SECONDS);
+	        RunnerClass.wait = new WebDriverWait(RunnerClass.driver, Duration.ofSeconds(15));
 		  }
 		  catch(Exception e)
 		  {
@@ -136,7 +180,7 @@ public class RunnerClass
 		ExcelActivities.createExcelFileWithProcessedData();
 		
 
-	}
+	}   
 
 	public static File getLastModified() throws Exception
 	{

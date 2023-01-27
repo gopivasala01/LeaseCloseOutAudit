@@ -35,13 +35,12 @@ public class PropertyWare
         // Adding cpabilities to ChromeOptions
         ChromeOptions options = new ChromeOptions();
         options.setExperimentalOption("prefs", prefs);
-		
         
 		WebDriverManager.chromedriver().setup();
         RunnerClass.driver= new ChromeDriver(options);
         RunnerClass.driver.manage().window().maximize();
         RunnerClass.driver.get(AppConfig.URL);
-        RunnerClass.driver.findElement(Locators.username).sendKeys(AppConfig.username);
+        RunnerClass.driver.findElement(Locators.username).sendKeys(AppConfig.username); 
         RunnerClass.driver.findElement(Locators.password).sendKeys(AppConfig.password);
         RunnerClass.driver.findElement(Locators.signInButton).click();
         RunnerClass.actions = new Actions(RunnerClass.driver);
@@ -138,6 +137,41 @@ public class PropertyWare
 	
 	public static boolean downloadLeaseAgreement(String building, String ownerName) throws Exception
 	{
+		/*
+		RunnerClass.published =true;
+		RunnerClass.listingAgent = true;
+		//Check if Unit is published or not
+		try
+		{
+		String published = RunnerClass.driver.findElement(Locators.published).getText();
+		if(published.trim().toLowerCase()!="yes")
+		{
+			RunnerClass.published =false;
+			System.out.println("Not a Published Unit");
+			RunnerClass.failedReaonsList.put(building, "Not a Published Unit");
+		    RunnerClass.failedReason = "Not a Published Unit";
+			RunnerClass.updateStatus=1;
+			return false;
+		}
+		}
+		catch(Exception e) {}
+		
+		//Check Listing Agent Type
+		try
+		{
+		String listingAgent = RunnerClass.driver.findElement(Locators.published).getText();
+		if(listingAgent.trim().toLowerCase().contains("Sovereign".toLowerCase())&&listingAgent.trim().toLowerCase().contains("MCH".toLowerCase()))
+		{
+			RunnerClass.listingAgent =false;
+			System.out.println("Unit marketed by Sovereign");
+			RunnerClass.failedReaonsList.put(building, "Unit marketed by Sovereign");
+		    RunnerClass.failedReason = "Unit marketed by Sovereign";
+			RunnerClass.updateStatus=1;
+			return false;
+		}
+		}
+		catch(Exception e) {}
+		*/
 		try
 		{
 			RunnerClass.portfolioType = RunnerClass.driver.findElement(Locators.checkPortfolioType).getText();
@@ -157,7 +191,9 @@ public class PropertyWare
 		if(portfolioFlag==1)
 			RunnerClass.portfolioType = "MCH";
 		else RunnerClass.portfolioType = "Others";
+	    System.out.println("Portfolio Type = "+RunnerClass.portfolioType);
 		}
+	
 		catch(Exception e) 
 		{}
 		
@@ -168,6 +204,8 @@ public class PropertyWare
 		RunnerClass.js.executeScript("window.scrollBy(0,document.body.scrollHeight)");
 		Thread.sleep(2000);
 		RunnerClass.driver.findElement(Locators.leasesTab).click();
+		RunnerClass.driver.manage().timeouts().implicitlyWait(5,TimeUnit.SECONDS);
+        RunnerClass.wait = new WebDriverWait(RunnerClass.driver, Duration.ofSeconds(5));
 		try
 		{
 		RunnerClass.driver.findElement(By.partialLinkText(ownerName.trim())).click();
@@ -175,13 +213,23 @@ public class PropertyWare
 		catch(Exception e)
 		{
 			
-			System.out.println("Unable to Click Lease Onwer Name");
+			System.out.println("Unable to Click Lease Owner Name");
 			RunnerClass.failedReaonsList.put(building, "Unable to Click Lease Onwer Name");
 		    RunnerClass.failedReason = "Unable to Click Lease Onwer Name";
 			RunnerClass.updateStatus=1;
 			return false;
 		}
+		try
+		{
+			if(RunnerClass.driver.findElement(Locators.renewalPopup).isDisplayed())
+			{
+				RunnerClass.driver.findElement(Locators.renewalPoupCloseButton).click();
+			}
 
+		}
+		catch(Exception e) {}
+		RunnerClass.driver.manage().timeouts().implicitlyWait(15,TimeUnit.SECONDS);
+        RunnerClass.wait = new WebDriverWait(RunnerClass.driver, Duration.ofSeconds(15));
 		RunnerClass.js.executeScript("window.scrollBy(0,document.body.scrollHeight)");
 		
 		RunnerClass.driver.findElement(Locators.notesAndDocs).click();
@@ -275,6 +323,8 @@ public class PropertyWare
 	
 	public static boolean compareValues(String monthlyRent, String startDate) throws Exception
 	{
+		try
+		{
 		RunnerClass.monthlyRentInPW ="";
 		RunnerClass.startDateInPW ="";
 		int availibilityCheck =0;
@@ -295,6 +345,7 @@ public class PropertyWare
 				{
 					String rent = RunnerClass.driver.findElement(By.xpath("//*[@id='autoChargesTable']/tbody/tr["+(i+1)+"]/td[3]")).getText();
 					RunnerClass.monthlyRentInPW = rent.substring(1);
+					System.out.println("Monthly Rent from PW = "+RunnerClass.monthlyRentInPW);
 					String date = RunnerClass.driver.findElement(By.xpath("//*[@id='autoChargesTable']/tbody/tr["+(i+1)+"]/td[5]")).getText();
 					RunnerClass.startDateInPW = date;
 					rent = rent.replaceAll("[^0-9]", "");
@@ -310,6 +361,11 @@ public class PropertyWare
 		if(availibilityCheck==0)
 			return false;
 		return false;
+		}
+		catch(Exception e)
+		{
+			return false;
+		}
 	}
 	
 }

@@ -33,4 +33,10 @@ public class Locators
     
     public static By autoChargeCodesList = By.xpath("//*[@id='autoChargesTable']/tbody/tr/td[1]");
     public static By checkPortfolioType = By.xpath("//*[@title='Click to jump to portfolio']");
+    
+    public static By published = By.xpath("//*[contains(text(),'Published Rental')]/following::td[1]");
+    public static By listingAgent = By.xpath("//*[contains(text(),'Listing Agent [Name/Phone/Email]')]/following::td[1]");
+    
+    public static By renewalPopup = By.id("viewStickyNoteForm");
+    public static By renewalPoupCloseButton = By.xpath("//*[@id='viewStickyNoteForm']/div/div[1]/input[2]");
 }
